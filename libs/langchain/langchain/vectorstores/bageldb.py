@@ -24,7 +24,6 @@ from bagel.api.types import ID, Where
 
 DEFAULT_K = 5
 
-
 def _results_to_docs_and_scores(results: Any) -> List[Tuple[Document, float]]:
     return [(
         Document(page_content=result[0], metadata=result[1] or {}), result[2])
@@ -110,7 +109,6 @@ class Bagel(VectorStore):
                 metadatas = metadatas + [{}] * length_diff
             empty_ids = []
             non_empty_ids = []
-
             for idx, metadata in enumerate(metadatas):
                 if metadata:
                     non_empty_ids.append(idx)
@@ -123,7 +121,6 @@ class Bagel(VectorStore):
                     [embeddings[idx] for idx in non_empty_ids] if embeddings else None
                 )
                 ids_with_metadata = [ids[idx] for idx in non_empty_ids]
-
                 self._cluster.upsert(
                     metadatas=metadatas,
                     embeddings=embeddings_with_metadatas,
@@ -182,7 +179,6 @@ class Bagel(VectorStore):
         embedding: Optional[Embeddings] = None,
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
-
         collection_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         persist_directory: Optional[str] = None,
         client_settings: Optional[bagel.config.Settings] = None,
