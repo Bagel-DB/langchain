@@ -10,6 +10,7 @@ def test_create_bagel() -> Bagel:
     return Bagel(client_settings=setting)
 
 
+
 def test_add_only_texts(bagel: Bagel) -> None:
     bagel.add_texts(texts=["hello bagel", "hello langchain"])
     print(">> add_texts with only text")
