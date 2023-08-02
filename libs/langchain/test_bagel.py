@@ -27,6 +27,5 @@ def main():
     test_similarity_search(bagel_instance)
 
 
-
 if __name__ == "__main__":
     main()
