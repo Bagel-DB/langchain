@@ -23,11 +23,11 @@ from bagel.api.types import ID, Where
 
 DEFAULT_K = 5
 class Bagel(VectorStore):
-    _LANGCHAIN_DEFAULT_COLLECTION_NAME = "langchain"
+    _LANGCHAIN_DEFAULT_CLUSTER_NAME = "langchain"
 
     def __init__(
         self,
-        collection_name: str = _LANGCHAIN_DEFAULT_COLLECTION_NAME,
+        collection_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
         collection_metadata: Optional[Dict] = None,
         client: Optional[bagel.Client] = None,
@@ -49,7 +49,7 @@ class Bagel(VectorStore):
             self._client_settings = _client_settings
             self._client = bagel.Client(_client_settings)
 
-        self._collection = self._client.get_or_create_cluster(
+        self._cluster = self._client.get_or_create_cluster(
             name=collection_name,
             metadata=collection_metadata,
         )
@@ -69,7 +69,7 @@ class Bagel(VectorStore):
         **kwargs: Any,
     ) -> List[Document]:
         """Query bagel dataset."""
-        return self._collection.query(
+        return self._cluster.query(
             query_texts=query_texts,
             query_embeddings=query_embeddings,
             n_results=n_results,
@@ -84,21 +84,21 @@ class Bagel(VectorStore):
         ids: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> List[str]:
+        # creating unique ids if None
         if ids is None:
             ids = [str(uuid.uuid1()) for _ in texts]
+
         embeddings = None
         texts = list(texts)
-        # if self._embedding_function is not None:
-        #     embeddings = self._embedding_function.embed_documents(texts)
-        if metadatas:
 
+        if metadatas:
             length_diff = len(texts) - len(metadatas)
             if length_diff:
                 metadatas = metadatas + [{}] * length_diff
             empty_ids = []
             non_empty_ids = []
-            for idx, m in enumerate(metadatas):
-                if m:
+            for idx, metadata in enumerate(metadatas):
+                if metadata:
                     non_empty_ids.append(idx)
                 else:
                     empty_ids.append(idx)
@@ -109,7 +109,7 @@ class Bagel(VectorStore):
                     [embeddings[idx] for idx in non_empty_ids] if embeddings else None
                 )
                 ids_with_metadata = [ids[idx] for idx in non_empty_ids]
-                self._collection.upsert(
+                self._cluster.upsert(
                     metadatas=metadatas,
                     embeddings=embeddings_with_metadatas,
                     documents=texts_with_metadatas,
@@ -121,15 +121,17 @@ class Bagel(VectorStore):
                     [embeddings[j] for j in empty_ids] if embeddings else None
                 )
                 ids_without_metadatas = [ids[j] for j in empty_ids]
-                self._collection.upsert(
+                self._cluster.upsert(
                     embeddings=embeddings_without_metadatas,
                     documents=texts_without_metadatas,
                     ids=ids_without_metadatas,
                 )
         else:
-            self._collection.upsert(
+            metadatas = [{}] * len(texts)
+            self._cluster.upsert(
                 embeddings=embeddings,
                 documents=texts,
+                metadatas=metadatas,
                 ids=ids,
             )
         return ids
@@ -150,7 +152,7 @@ class Bagel(VectorStore):
         embedding: Optional[Embeddings] = None,
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
-        collection_name: str = _LANGCHAIN_DEFAULT_COLLECTION_NAME,
+        collection_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         persist_directory: Optional[str] = None,
         client_settings: Optional[bagel.config.Settings] = None,
         client: Optional[bagel.Client] = None,
