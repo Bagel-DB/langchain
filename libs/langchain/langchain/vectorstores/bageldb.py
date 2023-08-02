@@ -24,6 +24,7 @@ from bagel.api.types import ID, Where
 
 DEFAULT_K = 5
 
+
 def _results_to_docs_and_scores(results: Any) -> List[Tuple[Document, float]]:
     return [(
         Document(page_content=result[0], metadata=result[1] or {}), result[2])
@@ -35,9 +36,9 @@ def _results_to_docs_and_scores(results: Any) -> List[Tuple[Document, float]]:
     ]
 
 
-
 class Bagel(VectorStore):
     _LANGCHAIN_DEFAULT_CLUSTER_NAME = "langchain"
+
     def __init__(
         self,
         collection_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
