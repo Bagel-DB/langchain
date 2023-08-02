@@ -28,8 +28,6 @@ class Bagel(VectorStore):
     def __init__(
         self,
         collection_name: str = _LANGCHAIN_DEFAULT_COLLECTION_NAME,
-        embedding_function: Optional[Embeddings] = None,
-        persist_directory: Optional[str] = None,
         client_settings: Optional[bagel.config.Settings] = None,
         collection_metadata: Optional[Dict] = None,
         client: Optional[bagel.Client] = None,
@@ -59,7 +57,7 @@ class Bagel(VectorStore):
 
     @property
     def embeddings(self) -> Optional[Embeddings]:
-        return self._embedding_function
+        return None
 
     @xor_args(("query_texts", "query_embeddings"))
     def __query_collection(
