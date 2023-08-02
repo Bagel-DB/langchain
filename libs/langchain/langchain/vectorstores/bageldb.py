@@ -10,6 +10,7 @@ from typing import (
     Callable,
     Iterable,
     Type,
+    Tuple,
 )
 
 from langchain.docstore.document import Document
@@ -22,6 +23,19 @@ import bagel.config
 from bagel.api.types import ID, Where
 
 DEFAULT_K = 5
+
+
+def _results_to_docs_and_scores(results: Any) -> List[Tuple[Document, float]]:
+    return [(
+        Document(page_content=result[0], metadata=result[1] or {}), result[2])
+        for result in zip(
+            results["documents"][0],
+            results["metadatas"][0],
+            results["distances"][0],
+        )
+    ]
+
+
 class Bagel(VectorStore):
     _LANGCHAIN_DEFAULT_CLUSTER_NAME = "langchain"
 
@@ -69,7 +83,7 @@ class Bagel(VectorStore):
         **kwargs: Any,
     ) -> List[Document]:
         """Query bagel dataset."""
-        return self._cluster.query(
+        return self._cluster.find(
             query_texts=query_texts,
             query_embeddings=query_embeddings,
             n_results=n_results,
@@ -143,7 +157,22 @@ class Bagel(VectorStore):
         filter: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> List[Document]:
-        pass
+        docs_and_scores = self.similarity_search_with_score(
+            query, k, filter=filter
+        )
+        return [doc for doc, _ in docs_and_scores]
+
+    def similarity_search_with_score(
+        self,
+        query: str,
+        k: int = DEFAULT_K,
+        filter: Optional[Dict[str, str]] = None,
+        **kwargs: Any,
+    ) -> List[Tuple[Document, float]]:
+        results = self.__query_collection(
+            query_texts=[query], n_results=k, where=filter
+        )
+        return _results_to_docs_and_scores(results)
 
     @classmethod
     def from_texts(
