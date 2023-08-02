@@ -62,7 +62,6 @@ class Bagel(VectorStore):
             self._client_settings = _client_settings
             self._client = bagel.Client(_client_settings)
 
-
         self._cluster = self._client.get_or_create_cluster(
             name=collection_name,
             metadata=collection_metadata,
