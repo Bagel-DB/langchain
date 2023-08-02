@@ -36,9 +36,9 @@ def _results_to_docs_and_scores(results: Any) -> List[Tuple[Document, float]]:
     ]
 
 
+
 class Bagel(VectorStore):
     _LANGCHAIN_DEFAULT_CLUSTER_NAME = "langchain"
-
     def __init__(
         self,
         collection_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
@@ -54,7 +54,6 @@ class Bagel(VectorStore):
         else:
             if client_settings:
                 _client_settings = client_settings
-
             else:
                 _client_settings = bagel.config.Settings(
                         bagel_api_impl="rest",
@@ -62,6 +61,7 @@ class Bagel(VectorStore):
                     )
             self._client_settings = _client_settings
             self._client = bagel.Client(_client_settings)
+
 
         self._cluster = self._client.get_or_create_cluster(
             name=collection_name,
@@ -111,6 +111,7 @@ class Bagel(VectorStore):
                 metadatas = metadatas + [{}] * length_diff
             empty_ids = []
             non_empty_ids = []
+
             for idx, metadata in enumerate(metadatas):
                 if metadata:
                     non_empty_ids.append(idx)
@@ -123,6 +124,7 @@ class Bagel(VectorStore):
                     [embeddings[idx] for idx in non_empty_ids] if embeddings else None
                 )
                 ids_with_metadata = [ids[idx] for idx in non_empty_ids]
+
                 self._cluster.upsert(
                     metadatas=metadatas,
                     embeddings=embeddings_with_metadatas,
@@ -181,6 +183,7 @@ class Bagel(VectorStore):
         embedding: Optional[Embeddings] = None,
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
+
         collection_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         persist_directory: Optional[str] = None,
         client_settings: Optional[bagel.config.Settings] = None,
