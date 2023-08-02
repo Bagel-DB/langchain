@@ -6,8 +6,8 @@ def test_create_bagel() -> None:
         bagel_api_impl="rest",
         bagel_server_host="api.bageldb.ai",
     )
-    # bagel_obj = Bagel(client_settings=setting)
-    # print("object created!", flush=True)
+    bagel_obj = Bagel(client_settings=setting)
+    # print("ping :", bagel_obj._client.ping())
 
 
 test_create_bagel()
