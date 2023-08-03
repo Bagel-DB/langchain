@@ -1,7 +1,6 @@
 """BagelDB integration"""
 from __future__ import annotations
 
-import numpy as np
 import uuid
 from typing import (
     Optional,
@@ -22,7 +21,7 @@ from langchain.utils import xor_args
 
 import bagel
 import bagel.config
-# from bagel.api.types import ID, OneOrMany
+from bagel.api.types import ID, OneOrMany, WhereDocument, Where
 
 DEFAULT_K = 5
 
@@ -264,7 +263,6 @@ class Bagel(VectorStore):
         embedding: Optional[Embeddings] = None,
         ids: Optional[List[str]] = None,
         cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
-        persist_directory: Optional[str] = None,
         client_settings: Optional[bagel.config.Settings] = None,
         client: Optional[bagel.Client] = None,
         cluster_metadata: Optional[Dict] = None,
@@ -278,7 +276,6 @@ class Bagel(VectorStore):
             metadatas=metadatas,
             ids=ids,
             cluster_name=cluster_name,
-            persist_directory=persist_directory,
             client_settings=client_settings,
             client=client,
             cluster_metadata=cluster_metadata,
@@ -293,3 +290,28 @@ class Bagel(VectorStore):
             documents=[text],
             metadatas=[metadata],
         )
+
+    def get(
+        self,
+        ids: Optional[OneOrMany[ID]] = None,
+        where: Optional[Where] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        where_document: Optional[WhereDocument] = None,
+        include: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        kwargs = {
+            "ids": ids,
+            "where": where,
+            "limit": limit,
+            "offset": offset,
+            "where_document": where_document,
+        }
+
+        if include is not None:
+            kwargs["include"] = include
+
+        return self._cluster.get(**kwargs)
+
+    def delete(self, ids: Optional[List[str]] = None, **kwargs: Any) -> None:
+        self._cluster.delete(ids=ids)
