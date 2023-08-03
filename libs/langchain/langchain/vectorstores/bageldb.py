@@ -23,7 +23,9 @@ try:
     import bagel.config
     from bagel.api.types import ID, OneOrMany, WhereDocument, Where
 except ImportError:
-    raise ValueError("Please install bagel `pip install betabageldb`.")
+    raise ValueError(
+        "Please install bagel `pip install betabageldb`."
+        )
 
 
 DEFAULT_K = 5
@@ -45,6 +47,17 @@ def _results_to_docs_and_scores(results: Any) -> List[Tuple[Document, float]]:
 
 
 class Bagel(VectorStore):
+    """Wrapper around BagelDB.ai vector store.
+
+    To use, you should have the ``betabageldb`` python package installed.
+
+    Example:
+        .. code-block:: python
+
+                from langchain.vectorstores import Bagel
+                vectorstore = Bagel(cluster_name="langchain_store")
+    """
+
     _LANGCHAIN_DEFAULT_CLUSTER_NAME = "langchain"
 
     def __init__(
@@ -55,7 +68,7 @@ class Bagel(VectorStore):
         client: Optional[bagel.Client] = None,
         relevance_score_fn: Optional[Callable[[float], float]] = None,
     ) -> None:
-        """Initialize with bagel client."""
+        """Initialize with bagel client"""
         if client is not None:
             self._client_settings = client_settings
             self._client = client
@@ -89,7 +102,7 @@ class Bagel(VectorStore):
         where: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> List[Document]:
-        """Query bagel dataset."""
+        """Query the BagelDB cluster based on the provided parameters."""
         return self._cluster.find(
             query_texts=query_texts,
             query_embeddings=query_embeddings,
@@ -106,6 +119,19 @@ class Bagel(VectorStore):
         ids: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> List[str]:
+        """
+        Add texts along with their corresponding embeddings and optional
+        metadata to the BagelDB cluster.
+
+        Args:
+            texts (Iterable[str]): Texts to be added.
+            embeddings (Optional[List[float]]): List of embeddingvectors
+            metadatas (Optional[List[dict]]): Optional list of metadatas.
+            ids (Optional[List[str]]): List of unique ID for the texts.
+
+        Returns:
+            List[str]: List of unique ID representing the added texts.
+        """
         # creating unique ids if None
         if ids is None:
             ids = [str(uuid.uuid1()) for _ in texts]
@@ -164,6 +190,18 @@ class Bagel(VectorStore):
         where: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> List[Document]:
+        """
+        Run a similarity search with BagelDB.
+
+        Args:
+            query (str): The query text to search for similar documents/texts.
+            k (int): The number of results to return.
+            where (Optional[Dict[str, str]]): Metadata filters to narrow down.
+
+        Returns:
+            List[Document]: List of documents objects representing
+            the documents most similar to the query text.
+        """
         docs_and_scores = self.similarity_search_with_score(
             query, k, where=where
         )
@@ -176,6 +214,21 @@ class Bagel(VectorStore):
         where: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> List[Tuple[Document, float]]:
+        """
+        Run a similarity search with BagelDB and return documents with their
+        corresponding similarity scores.
+
+        Args:
+            query (str): The query text to search for similar documents.
+            k (int): The number of results to return.
+            where (Optional[Dict[str, str]]): Filter using metadata.
+
+        Returns:
+            List[Tuple[Document, float]]: List of tuples, each containing a
+            Document object representing a similar document and its
+            corresponding similarity score.
+
+        """
         results = self.__query_cluster(
             query_texts=[query], n_results=k, where=where
         )
@@ -194,6 +247,22 @@ class Bagel(VectorStore):
         client: Optional[bagel.Client] = None,
         **kwargs: Any,
     ) -> Bagel:
+        """
+        Create and initialize a Bagel instance from list of texts.
+
+        Args:
+            texts (List[str]): List of text content to be added.
+            cluster_name (str): The name of the BagelDB cluster.
+            client_settings (Optional[bagel.config.Settings]): Client settings.
+            cluster_metadata (Optional[Dict]): Metadata of the cluster.
+            embeddings (Optional[Embeddings]): List of embedding.
+            metadatas (Optional[List[dict]]): List of metadata.
+            ids (Optional[List[str]]): List of unique ID. Defaults to None.
+            client (Optional[bagel.Client]): Bagel client instance.
+
+        Returns:
+            Bagel: Bagel vectorstore.
+        """
         bagel_cluster = cls(
             cluster_name=cluster_name,
             client_settings=client_settings,
@@ -218,6 +287,9 @@ class Bagel(VectorStore):
         where: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> List[Tuple[Document, float]]:
+        """
+        Return docs most similar to embedding vector and similarity score.
+        """
         results = self.__query_cluster(
             query_embeddings=embedding, n_results=k, where=where
         )
@@ -230,12 +302,17 @@ class Bagel(VectorStore):
         where: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> List[Document]:
+        """Return docs most similar to embedding vector."""
         results = self.__query_cluster(
             query_embeddings=embedding, n_results=k, where=where
         )
         return _results_to_docs(results)
 
     def _select_relevance_score_fn(self) -> Callable[[float], float]:
+        """
+        Select and return the appropriate relevance score function based
+        on the distance metric used in the BagelDB cluster.
+        """
         if self.override_relevance_score_fn:
             return self.override_relevance_score_fn
 
@@ -254,16 +331,16 @@ class Bagel(VectorStore):
             return self._max_inner_product_relevance_score_fn
         else:
             raise ValueError(
-                "No supported normalization function"
-                f" for distance metric of type: {distance}."
-                "Consider providing relevance_score_fn to Chroma constructor."
+                "No supported normalization function for distance"
+                f" metric of type: {distance}. Consider providing"
+                " relevance_score_fn to Bagel constructor."
             )
 
     @classmethod
     def from_documents(
         cls: Type[Bagel],
         documents: List[Document],
-        embedding: Optional[Embeddings] = None,
+        embedding: Optional[List[float]] = None,
         ids: Optional[List[str]] = None,
         cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
@@ -271,6 +348,23 @@ class Bagel(VectorStore):
         cluster_metadata: Optional[Dict] = None,
         **kwargs: Any,
     ) -> Bagel:
+        """
+        Create a Bagel vectorstore from a list of documents.
+
+        Args:
+            documents (List[Document]): List of Document objects to add to the
+                                        Bagel vectorstore.
+            embedding (Optional[List[float]]): List of embedding.
+            ids (Optional[List[str]]): List of IDs. Defaults to None.
+            cluster_name (str): The name of the BagelDB cluster.
+            client_settings (Optional[bagel.config.Settings]): Client settings.
+            client (Optional[bagel.Client]): Bagel client instance.
+            cluster_metadata (Optional[Dict]): Metadata associated with the
+                                               Bagel cluster. Defaults to None.
+
+        Returns:
+            Bagel: Bagel vectorstore.
+        """
         texts = [doc.page_content for doc in documents]
         metadatas = [doc.metadata for doc in documents]
         return cls.from_texts(
@@ -286,6 +380,12 @@ class Bagel(VectorStore):
         )
 
     def update_document(self, document_id: str, document: Document) -> None:
+        """Update a document in the cluster.
+
+        Args:
+            document_id (str): ID of the document to update.
+            document (Document): Document to update.
+        """
         text = document.page_content
         metadata = document.metadata
         self._cluster.update(
@@ -303,6 +403,7 @@ class Bagel(VectorStore):
         where_document: Optional[WhereDocument] = None,
         include: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
+        """Gets the collection."""
         kwargs = {
             "ids": ids,
             "where": where,
@@ -317,4 +418,10 @@ class Bagel(VectorStore):
         return self._cluster.get(**kwargs)
 
     def delete(self, ids: Optional[List[str]] = None, **kwargs: Any) -> None:
+        """
+        Delete by IDs.
+
+        Args:
+            ids: List of ids to delete.
+        """
         self._cluster.delete(ids=ids)
