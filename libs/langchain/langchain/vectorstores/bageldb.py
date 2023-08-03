@@ -20,7 +20,7 @@ from langchain.utils import xor_args
 
 import bagel
 import bagel.config
-from bagel.api.types import ID, Where
+# from bagel.api.types import ID, OneOrMany
 
 DEFAULT_K = 5
 
@@ -94,6 +94,7 @@ class Bagel(VectorStore):
     def add_texts(
         self,
         texts: Iterable[str],
+        embeddings: Optional[List[float]] = None,
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
         **kwargs: Any,
@@ -102,7 +103,6 @@ class Bagel(VectorStore):
         if ids is None:
             ids = [str(uuid.uuid1()) for _ in texts]
 
-        embeddings = None
         texts = list(texts)
 
         if metadatas:
@@ -181,6 +181,7 @@ class Bagel(VectorStore):
         cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
         cluster_metadata: Optional[Dict] = None,
+        embeddings: Optional[List[float]] = None,
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
         client: Optional[bagel.Client] = None,
@@ -193,5 +194,24 @@ class Bagel(VectorStore):
             cluster_metadata=cluster_metadata,
             **kwargs,
         )
-        bagel_cluster.add_texts(texts=texts, metadatas=metadatas, ids=ids)
+        bagel_cluster.add_texts(
+            texts=texts, embeddings=embeddings,
+            metadatas=metadatas, ids=ids
+        )
         return bagel_cluster
+
+    def delete_cluster(self) -> None:
+        """Delete the collection."""
+        self._client.delete_cluster(self._cluster.name)
+
+    def similarity_search_by_vector_with_relevance_scores(
+        self,
+        embedding: List[float],
+        k: int = DEFAULT_K,
+        where: Optional[Dict[str, str]] = None,
+        **kwargs: Any,
+    ) -> List[Tuple[Document, float]]:
+        results = self.__query_cluster(
+            query_embeddings=embedding, n_results=k, where=where
+        )
+        return _results_to_docs_and_scores(results)
