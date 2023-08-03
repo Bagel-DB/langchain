@@ -41,9 +41,9 @@ class Bagel(VectorStore):
 
     def __init__(
         self,
-        collection_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
+        cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
-        collection_metadata: Optional[Dict] = None,
+        cluster_metadata: Optional[Dict] = None,
         client: Optional[bagel.Client] = None,
         relevance_score_fn: Optional[Callable[[float], float]] = None,
     ) -> None:
@@ -64,8 +64,8 @@ class Bagel(VectorStore):
             self._client = bagel.Client(_client_settings)
 
         self._cluster = self._client.get_or_create_cluster(
-            name=collection_name,
-            metadata=collection_metadata,
+            name=cluster_name,
+            metadata=cluster_metadata,
         )
         self.override_relevance_score_fn = relevance_score_fn
 
@@ -74,7 +74,7 @@ class Bagel(VectorStore):
         return None
 
     @xor_args(("query_texts", "query_embeddings"))
-    def __query_collection(
+    def __query_cluster(
         self,
         query_texts: Optional[List[str]] = None,
         query_embeddings: Optional[List[List[float]]] = None,
@@ -166,11 +166,11 @@ class Bagel(VectorStore):
         self,
         query: str,
         k: int = DEFAULT_K,
-        filter: Optional[Dict[str, str]] = None,
+        where: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> List[Tuple[Document, float]]:
-        results = self.__query_collection(
-            query_texts=[query], n_results=k, where=filter
+        results = self.__query_cluster(
+            query_texts=[query], n_results=k, where=where
         )
         return _results_to_docs_and_scores(results)
 
@@ -178,14 +178,20 @@ class Bagel(VectorStore):
     def from_texts(
         cls: Type[Bagel],
         texts: List[str],
-        embedding: Optional[Embeddings] = None,
+        cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
+        client_settings: Optional[bagel.config.Settings] = None,
+        cluster_metadata: Optional[Dict] = None,
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
-        collection_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
-        persist_directory: Optional[str] = None,
-        client_settings: Optional[bagel.config.Settings] = None,
         client: Optional[bagel.Client] = None,
-        collection_metadata: Optional[Dict] = None,
         **kwargs: Any,
     ) -> Bagel:
-        pass
+        bagel_cluster = cls(
+            cluster_name=cluster_name,
+            client_settings=client_settings,
+            client=client,
+            cluster_metadata=cluster_metadata,
+            **kwargs,
+        )
+        bagel_cluster.add_texts(texts=texts, metadatas=metadatas, ids=ids)
+        return bagel_cluster
