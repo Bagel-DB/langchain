@@ -153,18 +153,18 @@ def test_bagel_update_document() -> None:
     assert output == [Document(page_content=updated_content, metadata={"page": "0"})]
 
 
-def main():
-    """Bagel intigaration test"""
-    test_similarity_search()
-    test_bagel()
-    test_with_metadatas()
-    test_with_metadatas_with_scores()
-    test_with_metadatas_with_scores_using_vector()
-    test_search_filter()
-    test_search_filter_with_scores()
-    test_with_include_parameter()
-    test_bagel_update_document()
+# def main():
+#     """Bagel intigaration test"""
+#     test_similarity_search()
+#     test_bagel()
+#     test_with_metadatas()
+#     test_with_metadatas_with_scores()
+#     test_with_metadatas_with_scores_using_vector()
+#     test_search_filter()
+#     test_search_filter_with_scores()
+#     test_with_include_parameter()
+#     test_bagel_update_document()
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
