@@ -1,6 +1,7 @@
 """BagelDB integration"""
 from __future__ import annotations
 
+import numpy as np
 import uuid
 from typing import (
     Optional,
@@ -13,6 +14,7 @@ from typing import (
     Tuple,
 )
 
+from langchain.vectorstores.utils import maximal_marginal_relevance
 from langchain.docstore.document import Document
 from langchain.vectorstores.base import VectorStore
 from langchain.embeddings.base import Embeddings
@@ -184,7 +186,7 @@ class Bagel(VectorStore):
         cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
         cluster_metadata: Optional[Dict] = None,
-        embeddings: Optional[List[float]] = None,
+        embeddings: Optional[Embeddings] = None,
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
         client: Optional[bagel.Client] = None,
@@ -204,7 +206,7 @@ class Bagel(VectorStore):
         return bagel_cluster
 
     def delete_cluster(self) -> None:
-        """Delete the collection."""
+        """Delete the cluster."""
         self._client.delete_cluster(self._cluster.name)
 
     def similarity_search_by_vector_with_relevance_scores(
@@ -254,3 +256,81 @@ class Bagel(VectorStore):
                 f" for distance metric of type: {distance}."
                 "Consider providing relevance_score_fn to Chroma constructor."
             )
+
+    @classmethod
+    def from_documents(
+        cls: Type[Bagel],
+        documents: List[Document],
+        embedding: Optional[Embeddings] = None,
+        ids: Optional[List[str]] = None,
+        cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
+        persist_directory: Optional[str] = None,
+        client_settings: Optional[bagel.config.Settings] = None,
+        client: Optional[bagel.Client] = None,
+        cluster_metadata: Optional[Dict] = None,
+        **kwargs: Any,
+    ) -> Bagel:
+        texts = [doc.page_content for doc in documents]
+        metadatas = [doc.metadata for doc in documents]
+        return cls.from_texts(
+            texts=texts,
+            embeddings=embedding,
+            metadatas=metadatas,
+            ids=ids,
+            cluster_name=cluster_name,
+            persist_directory=persist_directory,
+            client_settings=client_settings,
+            client=client,
+            cluster_metadata=cluster_metadata,
+            **kwargs,
+        )
+
+    def update_document(self, document_id: str, document: Document) -> None:
+        text = document.page_content
+        metadata = document.metadata
+        self._cluster.update(
+            ids=[document_id],
+            documents=[text],
+            metadatas=[metadata],
+        )
+
+    def max_marginal_relevance_search_by_vector(
+        self,
+        embedding: List[float],
+        k: int = DEFAULT_K,
+        fetch_k: int = 20,
+        lambda_mult: float = 0.5,
+        where: Optional[Dict[str, str]] = None,
+        **kwargs: Any,
+    ) -> List[Document]:
+        results = self.__query_cluster(
+            query_embeddings=embedding,
+            n_results=fetch_k,
+            where=where,
+            include=["metadatas", "documents", "distances", "embeddings"],
+        )
+        mmr_selected = maximal_marginal_relevance(
+            np.array(embedding, dtype=np.float32),
+            results["embeddings"][0],
+            k=k,
+            lambda_mult=lambda_mult,
+        )
+
+        candidates = _results_to_docs(results)
+
+        selected_results = [r for i, r in enumerate(candidates) if i in mmr_selected]
+        return selected_results
+
+    def max_marginal_relevance_search(
+        self,
+        query: str,
+        k: int = DEFAULT_K,
+        fetch_k: int = 20,
+        lambda_mult: float = 0.5,
+        where: Optional[Dict[str, str]] = None,
+        **kwargs: Any,
+    ) -> List[Document]:
+        docs = self.max_marginal_relevance_search_by_vector(
+            query, k, fetch_k, lambda_mult=lambda_mult, where=where
+        )
+        return docs
