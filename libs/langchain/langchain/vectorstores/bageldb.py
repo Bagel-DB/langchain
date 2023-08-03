@@ -25,6 +25,10 @@ import bagel.config
 DEFAULT_K = 5
 
 
+def _results_to_docs(results: Any) -> List[Document]:
+    return [doc for doc, _ in _results_to_docs_and_scores(results)]
+
+
 def _results_to_docs_and_scores(results: Any) -> List[Tuple[Document, float]]:
     return [(
         Document(page_content=result[0], metadata=result[1] or {}), result[2])
@@ -153,11 +157,11 @@ class Bagel(VectorStore):
         self,
         query: str,
         k: int = DEFAULT_K,
-        filter: Optional[Dict[str, str]] = None,
+        where: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> List[Document]:
         docs_and_scores = self.similarity_search_with_score(
-            query, k, filter=filter
+            query, k, where=where
         )
         return [doc for doc, _ in docs_and_scores]
 
@@ -214,3 +218,39 @@ class Bagel(VectorStore):
             query_embeddings=embedding, n_results=k, where=where
         )
         return _results_to_docs_and_scores(results)
+
+    def similarity_search_by_vector(
+        self,
+        embedding: List[float],
+        k: int = DEFAULT_K,
+        where: Optional[Dict[str, str]] = None,
+        **kwargs: Any,
+    ) -> List[Document]:
+        results = self.__query_cluster(
+            query_embeddings=embedding, n_results=k, where=where
+        )
+        return _results_to_docs(results)
+
+    def _select_relevance_score_fn(self) -> Callable[[float], float]:
+        if self.override_relevance_score_fn:
+            return self.override_relevance_score_fn
+
+        distance = "l2"
+        distance_key = "hnsw:space"
+        metadata = self._cluster.metadata
+
+        if metadata and distance_key in metadata:
+            distance = metadata[distance_key]
+
+        if distance == "cosine":
+            return self._cosine_relevance_score_fn
+        elif distance == "l2":
+            return self._euclidean_relevance_score_fn
+        elif distance == "ip":
+            return self._max_inner_product_relevance_score_fn
+        else:
+            raise ValueError(
+                "No supported normalization function"
+                f" for distance metric of type: {distance}."
+                "Consider providing relevance_score_fn to Chroma constructor."
+            )
