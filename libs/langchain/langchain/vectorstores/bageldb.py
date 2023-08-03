@@ -13,15 +13,18 @@ from typing import (
     Tuple,
 )
 
-from langchain.vectorstores.utils import maximal_marginal_relevance
 from langchain.docstore.document import Document
 from langchain.vectorstores.base import VectorStore
 from langchain.embeddings.base import Embeddings
 from langchain.utils import xor_args
 
-import bagel
-import bagel.config
-from bagel.api.types import ID, OneOrMany, WhereDocument, Where
+try:
+    import bagel
+    import bagel.config
+    from bagel.api.types import ID, OneOrMany, WhereDocument, Where
+except ImportError:
+    raise ValueError("Please install bagel `pip install betabageldb`.")
+
 
 DEFAULT_K = 5
 
