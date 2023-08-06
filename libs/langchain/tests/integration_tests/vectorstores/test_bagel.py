@@ -1,7 +1,9 @@
 from langchain.vectorstores import Bagel
 from bagel.config import Settings
 from langchain.docstore.document import Document
-
+from tests.integration_tests.vectorstores.fake_embeddings import (
+    FakeEmbeddings,
+)
 
 def test_similarity_search() -> None:
     """Test smiliarity search"""
@@ -59,17 +61,15 @@ def test_with_metadatas_with_scores_using_vector() -> None:
     """Test end to end construction and scored search, using embedding vector."""
     texts = ["hello bagel", "hello langchain"]
     metadatas = [{"page": str(i)} for i in range(len(texts))]
-    embeddings = [[1.1, 2.3, 3.2],
-                  [0.3, 0.3, 0.1]]
 
     vector_search = Bagel.from_texts(
         cluster_name="testing_vector",
         texts=texts,
-        embeddings=embeddings,
+        embedding=FakeEmbeddings(),
         metadatas=metadatas,
     )
 
-    embedded_query = [[1.1, 2.3, 3.2]]
+    embedded_query = [1.1, 2.3, 3.2]
     output = vector_search.similarity_search_by_vector_with_relevance_scores(
         embedding=embedded_query, k=1
     )
