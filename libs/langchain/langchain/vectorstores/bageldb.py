@@ -114,7 +114,6 @@ class Bagel(VectorStore):
     def add_texts(
         self,
         texts: Iterable[str],
-        embeddings: Optional[List[float]] = None,
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
         **kwargs: Any,
@@ -152,31 +151,22 @@ class Bagel(VectorStore):
             if non_empty_ids:
                 metadatas = [metadatas[idx] for idx in non_empty_ids]
                 texts_with_metadatas = [texts[idx] for idx in non_empty_ids]
-                embeddings_with_metadatas = (
-                    [embeddings[idx] for idx in non_empty_ids] if embeddings else None
-                )
                 ids_with_metadata = [ids[idx] for idx in non_empty_ids]
                 self._cluster.upsert(
                     metadatas=metadatas,
-                    embeddings=embeddings_with_metadatas,
                     documents=texts_with_metadatas,
                     ids=ids_with_metadata,
                 )
             if empty_ids:
                 texts_without_metadatas = [texts[j] for j in empty_ids]
-                embeddings_without_metadatas = (
-                    [embeddings[j] for j in empty_ids] if embeddings else None
-                )
                 ids_without_metadatas = [ids[j] for j in empty_ids]
                 self._cluster.upsert(
-                    embeddings=embeddings_without_metadatas,
                     documents=texts_without_metadatas,
                     ids=ids_without_metadatas,
                 )
         else:
             metadatas = [{}] * len(texts)
             self._cluster.upsert(
-                embeddings=embeddings,
                 documents=texts,
                 metadatas=metadatas,
                 ids=ids,
@@ -238,12 +228,12 @@ class Bagel(VectorStore):
     def from_texts(
         cls: Type[Bagel],
         texts: List[str],
+        embedding: Optional[Embeddings] = None,
+        metadatas: Optional[List[dict]] = None,
+        ids: Optional[List[str]] = None,
         cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
         cluster_metadata: Optional[Dict] = None,
-        embeddings: Optional[Embeddings] = None,
-        metadatas: Optional[List[dict]] = None,
-        ids: Optional[List[str]] = None,
         client: Optional[bagel.Client] = None,
         **kwargs: Any,
     ) -> Bagel:
@@ -271,7 +261,7 @@ class Bagel(VectorStore):
             **kwargs,
         )
         bagel_cluster.add_texts(
-            texts=texts, embeddings=embeddings,
+            texts=texts, embeddings=embedding,
             metadatas=metadatas, ids=ids
         )
         return bagel_cluster
@@ -340,7 +330,7 @@ class Bagel(VectorStore):
     def from_documents(
         cls: Type[Bagel],
         documents: List[Document],
-        embedding: Optional[List[float]] = None,
+        embedding: Optional[Embeddings] = None,
         ids: Optional[List[str]] = None,
         cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
@@ -369,7 +359,7 @@ class Bagel(VectorStore):
         metadatas = [doc.metadata for doc in documents]
         return cls.from_texts(
             texts=texts,
-            embeddings=embedding,
+            embedding=embedding,
             metadatas=metadatas,
             ids=ids,
             cluster_name=cluster_name,
