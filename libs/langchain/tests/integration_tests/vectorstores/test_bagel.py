@@ -61,15 +61,16 @@ def test_with_metadatas_with_scores_using_vector() -> None:
     """Test end to end construction and scored search, using embedding vector."""
     texts = ["hello bagel", "hello langchain"]
     metadatas = [{"page": str(i)} for i in range(len(texts))]
+    embeddings = FakeEmbeddings()
 
     vector_search = Bagel.from_texts(
         cluster_name="testing_vector",
         texts=texts,
-        embedding=FakeEmbeddings(),
+        embedding=embeddings,
         metadatas=metadatas,
     )
 
-    embedded_query = [1.1, 2.3, 3.2]
+    embedded_query = embeddings.embed_query(text="hello bagel")
     output = vector_search.similarity_search_by_vector_with_relevance_scores(
         embedding=embedded_query, k=1
     )
@@ -153,18 +154,18 @@ def test_bagel_update_document() -> None:
     assert output == [Document(page_content=updated_content, metadata={"page": "0"})]
 
 
-# def main():
-#     """Bagel intigaration test"""
-#     test_similarity_search()
-#     test_bagel()
-#     test_with_metadatas()
-#     test_with_metadatas_with_scores()
-#     test_with_metadatas_with_scores_using_vector()
-#     test_search_filter()
-#     test_search_filter_with_scores()
-#     test_with_include_parameter()
-#     test_bagel_update_document()
+def main():
+    """Bagel intigaration test"""
+    test_similarity_search()
+    test_bagel()
+    test_with_metadatas()
+    test_with_metadatas_with_scores()
+    test_with_metadatas_with_scores_using_vector()
+    test_search_filter()
+    test_search_filter_with_scores()
+    test_with_include_parameter()
+    test_bagel_update_document()
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()

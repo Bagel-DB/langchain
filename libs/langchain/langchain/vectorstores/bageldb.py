@@ -116,6 +116,7 @@ class Bagel(VectorStore):
         texts: Iterable[str],
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
+        embeddings: Optional[List[float]] = None,
         **kwargs: Any,
     ) -> List[str]:
         """
@@ -151,22 +152,31 @@ class Bagel(VectorStore):
             if non_empty_ids:
                 metadatas = [metadatas[idx] for idx in non_empty_ids]
                 texts_with_metadatas = [texts[idx] for idx in non_empty_ids]
+                embeddings_with_metadatas = (
+                    [embeddings[idx] for idx in non_empty_ids] if embeddings else None
+                )
                 ids_with_metadata = [ids[idx] for idx in non_empty_ids]
                 self._cluster.upsert(
+                    embeddings=embeddings_with_metadatas,
                     metadatas=metadatas,
                     documents=texts_with_metadatas,
                     ids=ids_with_metadata,
                 )
             if empty_ids:
                 texts_without_metadatas = [texts[j] for j in empty_ids]
+                embeddings_without_metadatas = (
+                    [embeddings[j] for j in empty_ids] if embeddings else None
+                )
                 ids_without_metadatas = [ids[j] for j in empty_ids]
                 self._cluster.upsert(
+                    embeddings=embeddings_without_metadatas,
                     documents=texts_without_metadatas,
                     ids=ids_without_metadatas,
                 )
         else:
             metadatas = [{}] * len(texts)
             self._cluster.upsert(
+                embeddings=embeddings,
                 documents=texts,
                 metadatas=metadatas,
                 ids=ids,
@@ -255,6 +265,7 @@ class Bagel(VectorStore):
         """
         bagel_cluster = cls(
             cluster_name=cluster_name,
+            embedding_function=embedding,
             client_settings=client_settings,
             client=client,
             cluster_metadata=cluster_metadata,
