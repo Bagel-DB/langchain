@@ -92,7 +92,7 @@ class Bagel(VectorStore):
 
     @property
     def embeddings(self) -> Optional[Embeddings]:
-        return None
+        return self._embedding_function
 
     @xor_args(("query_texts", "query_embeddings"))
     def __query_cluster(
@@ -246,7 +246,7 @@ class Bagel(VectorStore):
         client_settings: Optional[bagel.config.Settings] = None,
         cluster_metadata: Optional[Dict] = None,
         client: Optional[bagel.Client] = None,
-        embed_text: Optional[List[float]] = None,
+        text_embe: Optional[List[float]] = None,
         **kwargs: Any,
     ) -> Bagel:
         """
@@ -274,7 +274,7 @@ class Bagel(VectorStore):
             **kwargs,
         )
         _ = bagel_cluster.add_texts(
-            texts=texts, embeddings=embed_text,
+            texts=texts, embeddings=text_embe,
             metadatas=metadatas, ids=ids
         )
         return bagel_cluster
@@ -285,7 +285,7 @@ class Bagel(VectorStore):
 
     def similarity_search_by_vector_with_relevance_scores(
         self,
-        embedding: List[float],
+        query_embeddings: List[float],
         k: int = DEFAULT_K,
         where: Optional[Dict[str, str]] = None,
         **kwargs: Any,
@@ -294,7 +294,7 @@ class Bagel(VectorStore):
         Return docs most similar to embedding vector and similarity score.
         """
         results = self.__query_cluster(
-            query_embeddings=embedding, n_results=k, where=where
+            query_embeddings=query_embeddings, n_results=k, where=where
         )
         return _results_to_docs_and_scores(results)
 
