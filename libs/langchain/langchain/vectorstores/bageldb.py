@@ -91,6 +91,8 @@ class Bagel(VectorStore):
         self.override_relevance_score_fn = relevance_score_fn
         if embedding_function:
             self._embedding_function = embedding_function
+        else:
+            self._embedding_function = None
 
     @property
     def embeddings(self) -> Optional[Embeddings]:
