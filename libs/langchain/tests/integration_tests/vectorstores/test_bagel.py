@@ -154,7 +154,7 @@ def test_bagel_update_document() -> None:
     assert output == [Document(page_content=updated_content, metadata={"page": "0"})]
 
 
-def main():
+def main() -> None:
     """Bagel intigaration test"""
     test_similarity_search()
     test_bagel()

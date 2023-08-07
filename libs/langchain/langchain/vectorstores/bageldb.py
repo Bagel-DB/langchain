@@ -64,6 +64,7 @@ class Bagel(VectorStore):
         self,
         cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
+        embedding_function: Optional[Embeddings] = None,
         cluster_metadata: Optional[Dict] = None,
         client: Optional[bagel.Client] = None,
         relevance_score_fn: Optional[Callable[[float], float]] = None,
@@ -245,6 +246,7 @@ class Bagel(VectorStore):
         client_settings: Optional[bagel.config.Settings] = None,
         cluster_metadata: Optional[Dict] = None,
         client: Optional[bagel.Client] = None,
+        embed_text: Optional[List[float]] = None,
         **kwargs: Any,
     ) -> Bagel:
         """
@@ -271,8 +273,8 @@ class Bagel(VectorStore):
             cluster_metadata=cluster_metadata,
             **kwargs,
         )
-        bagel_cluster.add_texts(
-            texts=texts, embeddings=embedding,
+        _ = bagel_cluster.add_texts(
+            texts=texts, embeddings=embed_text,
             metadatas=metadatas, ids=ids
         )
         return bagel_cluster
