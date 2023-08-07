@@ -89,6 +89,8 @@ class Bagel(VectorStore):
             metadata=cluster_metadata,
         )
         self.override_relevance_score_fn = relevance_score_fn
+        if embedding_function:
+            self._embedding_function = embedding_function
 
     @property
     def embeddings(self) -> Optional[Embeddings]:
@@ -138,7 +140,8 @@ class Bagel(VectorStore):
             ids = [str(uuid.uuid1()) for _ in texts]
 
         texts = list(texts)
-
+        if self._embedding_function and embeddings is None and texts:
+            embeddings = self._embedding_function.embed_documents(texts)
         if metadatas:
             length_diff = len(texts) - len(metadatas)
             if length_diff:

@@ -79,6 +79,26 @@ def test_with_metadatas_with_scores_using_vector() -> None:
     vector_search.delete_cluster()
 
 
+
+def test_with_metadatas_with_scores_using_vector_embe() -> None:
+    """Test end to end construction and scored search, using embedding vector."""
+    texts = ["hello bagel", "hello langchain"]
+    metadatas = [{"page": str(i)} for i in range(len(texts))]
+    embedding_function = FakeEmbeddings()
+
+    vector_search = Bagel.from_texts(
+        cluster_name="testing_vector_embedding1",
+        texts=texts,
+        metadatas=metadatas,
+        embedding=embedding_function,
+    )
+    embedded_query = embedding_function.embed_query("hello bagel")
+    output = vector_search.similarity_search_by_vector_with_relevance_scores(
+        query_embeddings=embedded_query, k=1
+    )
+    assert output == [(Document(page_content="hello bagel", metadata={"page": "0"}), 0.0)]
+    vector_search.delete_cluster()
+
 def test_search_filter() -> None:
     """Test end to end construction and search with metadata filtering."""
     texts = ["hello bagel", "hello langchain"]
@@ -165,6 +185,7 @@ def main() -> None:
     test_search_filter_with_scores()
     test_with_include_parameter()
     test_bagel_update_document()
+    test_with_metadatas_with_scores_using_vector_embe()
 
 
 if __name__ == "__main__":
