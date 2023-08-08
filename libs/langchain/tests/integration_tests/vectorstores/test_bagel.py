@@ -5,6 +5,7 @@ from tests.integration_tests.vectorstores.fake_embeddings import (
     FakeEmbeddings,
 )
 
+
 def test_similarity_search() -> None:
     """Test smiliarity search"""
     setting = Settings(
@@ -79,7 +80,6 @@ def test_with_metadatas_with_scores_using_vector() -> None:
     vector_search.delete_cluster()
 
 
-
 def test_with_metadatas_with_scores_using_vector_embe() -> None:
     """Test end to end construction and scored search, using embedding vector."""
     texts = ["hello bagel", "hello langchain"]
@@ -98,6 +98,7 @@ def test_with_metadatas_with_scores_using_vector_embe() -> None:
     )
     assert output == [(Document(page_content="hello bagel", metadata={"page": "0"}), 0.0)]
     vector_search.delete_cluster()
+
 
 def test_search_filter() -> None:
     """Test end to end construction and search with metadata filtering."""
