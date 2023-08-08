@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import uuid
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
@@ -11,18 +12,17 @@ from typing import (
     Optional,
     Tuple,
     Type,
-    TYPE_CHECKING,
 )
-
-from langchain.docstore.document import Document
-from langchain.embeddings.base import Embeddings
-from langchain.utils import xor_args
-from langchain.vectorstores.base import VectorStore
 
 if TYPE_CHECKING:
     import bagel
     import bagel.config
     from bagel.api.types import ID, OneOrMany, Where, WhereDocument
+
+from langchain.docstore.document import Document
+from langchain.embeddings.base import Embeddings
+from langchain.utils import xor_args
+from langchain.vectorstores.base import VectorStore
 
 DEFAULT_K = 5
 
