@@ -118,7 +118,7 @@ class Bagel(VectorStore):
         texts: Iterable[str],
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
-        embeddings: Optional[List[float]] = None,
+        embeddings: Optional[List[List[float]]] = None,
         **kwargs: Any,
     ) -> List[str]:
         """
@@ -248,7 +248,7 @@ class Bagel(VectorStore):
         client_settings: Optional[bagel.config.Settings] = None,
         cluster_metadata: Optional[Dict] = None,
         client: Optional[bagel.Client] = None,
-        text_embeddings: Optional[List[float]] = None,
+        text_embeddings: Optional[List[List[float]]] = None,
         **kwargs: Any,
     ) -> Bagel:
         """
