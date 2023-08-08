@@ -968,7 +968,7 @@ triton = ["tritonclient[all] (>=2.29.0)"]
 name = "betabageldb"
 version = "0.2.32"
 description = "BagelDB is a Python library for interacting with the BagelDB API."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -13614,4 +13614,4 @@ text-helpers = ["chardet"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<4.0"
-content-hash = "1fcf02383657b2fece7f02662a070a4843312babc3ea0e8d92d8b9ba321ef4c4"
+content-hash = "f719ae2f8f92066a8eeece23bf9feb10414f4ea7cbbaea26a48dbfc7cd386751"
