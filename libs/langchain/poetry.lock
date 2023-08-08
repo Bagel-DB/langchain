@@ -968,8 +968,8 @@ triton = ["tritonclient[all] (>=2.29.0)"]
 name = "betabageldb"
 version = "0.2.32"
 description = "BagelDB is a Python library for interacting with the BagelDB API."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 files = [
     {file = "betabageldb-0.2.32-py3-none-any.whl", hash = "sha256:1fc6fc6b1353bc8b8ca5f72ad0aa5d38069fd0d7236a6d4c96c12bc7bad8913e"},
@@ -2469,6 +2469,21 @@ wrapt = ">=1.10,<2"
 dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "sphinx (<2)", "tox"]
 
 [[package]]
+name = "deprecation"
+version = "2.1.0"
+description = "A library to handle automated deprecations"
+category = "main"
+optional = true
+python-versions = "*"
+files = [
+    {file = "deprecation-2.1.0-py2.py3-none-any.whl", hash = "sha256:a10811591210e1fb0e768a8c25517cabeabcba6f0bf96564f8ff45189f90b14a"},
+    {file = "deprecation-2.1.0.tar.gz", hash = "sha256:72b3bde64e5d778694b0cf68178aed03d15e15477116add3fb773e581f9518ff"},
+]
+
+[package.dependencies]
+packaging = "*"
+
+[[package]]
 name = "dill"
 version = "0.3.6"
 description = "serialize all of python"
@@ -3648,7 +3663,7 @@ websockets = ">=10.0,<12.0"
 name = "graphlib-backport"
 version = "1.0.3"
 description = "Backport of the Python 3.9 graphlib module for Python 3.6+"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6,<4.0"
 files = [
@@ -7543,7 +7558,7 @@ files = [
 name = "overrides"
 version = "7.3.1"
 description = "A decorator to automatically detect mismatch when overriding a method."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -13099,6 +13114,24 @@ files = [
 ]
 
 [[package]]
+name = "xata"
+version = "1.0.0a7"
+description = "Python client for Xata.io"
+category = "main"
+optional = true
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "xata-1.0.0a7-py3-none-any.whl", hash = "sha256:1427e97bccddfd5fa8fba56ba993b2d78f1dc074e729d06ccc79c48d07bd023a"},
+    {file = "xata-1.0.0a7.tar.gz", hash = "sha256:32769ddc22cc091bf133e66b91662185047fff05aa431e7c760b55cd0ddef6c3"},
+]
+
+[package.dependencies]
+deprecation = ">=2.1.0,<3.0.0"
+orjson = ">=3.8.1,<4.0.0"
+python-dotenv = ">=0.21,<2.0"
+requests = ">=2.28.1,<3.0.0"
+
+[[package]]
 name = "xinference"
 version = "0.0.6"
 description = "Model Serving Made Easy"
@@ -13604,7 +13637,7 @@ clarifai = ["clarifai"]
 cohere = ["cohere"]
 docarray = ["docarray"]
 embeddings = ["sentence-transformers"]
-extended-testing = ["amazon-textract-caller", "atlassian-python-api", "beautifulsoup4", "bibtexparser", "cassio", "chardet", "esprima", "feedparser", "geopandas", "gitpython", "gql", "html2text", "jinja2", "jq", "lxml", "mwparserfromhell", "mwxml", "newspaper3k", "openai", "openai", "pandas", "pdfminer-six", "pgvector", "psychicapi", "py-trello", "pymupdf", "pypdf", "pypdfium2", "pyspark", "rank-bm25", "rapidfuzz", "requests-toolbelt", "scikit-learn", "streamlit", "sympy", "telethon", "tqdm", "xinference", "zep-python"]
+extended-testing = ["amazon-textract-caller", "atlassian-python-api", "beautifulsoup4", "betabageldb", "bibtexparser", "cassio", "chardet", "esprima", "feedparser", "geopandas", "gitpython", "gql", "html2text", "jinja2", "jq", "lxml", "mwparserfromhell", "mwxml", "newspaper3k", "openai", "openai", "pandas", "pdfminer-six", "pgvector", "psychicapi", "py-trello", "pymupdf", "pypdf", "pypdfium2", "pyspark", "rank-bm25", "rapidfuzz", "requests-toolbelt", "scikit-learn", "streamlit", "sympy", "telethon", "tqdm", "xata", "xinference", "xmltodict", "zep-python"]
 javascript = ["esprima"]
 llms = ["anthropic", "clarifai", "cohere", "huggingface_hub", "manifest-ml", "nlpcloud", "openai", "openllm", "openlm", "torch", "transformers", "xinference"]
 openai = ["openai", "tiktoken"]
@@ -13614,4 +13647,4 @@ text-helpers = ["chardet"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<4.0"
-content-hash = "f719ae2f8f92066a8eeece23bf9feb10414f4ea7cbbaea26a48dbfc7cd386751"
+content-hash = "7dd2ee432c4f2f93e2cebc2d72ecc2db8b5f858f49e5e62d1e5c47a358445210"
