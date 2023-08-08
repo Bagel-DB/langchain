@@ -251,7 +251,7 @@ class Bagel(VectorStore):
         client_settings: Optional[bagel.config.Settings] = None,
         cluster_metadata: Optional[Dict] = None,
         client: Optional[bagel.Client] = None,
-        text_embe: Optional[List[float]] = None,
+        text_embeddings: Optional[List[float]] = None,
         **kwargs: Any,
     ) -> Bagel:
         """
@@ -279,7 +279,7 @@ class Bagel(VectorStore):
             **kwargs,
         )
         _ = bagel_cluster.add_texts(
-            texts=texts, embeddings=text_embe,
+            texts=texts, embeddings=text_embeddings,
             metadatas=metadatas, ids=ids
         )
         return bagel_cluster

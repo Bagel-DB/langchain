@@ -68,7 +68,7 @@ def test_with_metadatas_with_scores_using_vector() -> None:
         cluster_name="testing_vector",
         texts=texts,
         metadatas=metadatas,
-        text_embe=embeddings,
+        text_embeddings=embeddings,
     )
     
     embedded_query = [1.1, 2.3, 3.2]
