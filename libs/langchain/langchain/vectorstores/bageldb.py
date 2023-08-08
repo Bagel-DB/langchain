@@ -11,6 +11,7 @@ from typing import (
     Optional,
     Tuple,
     Type,
+    TYPE_CHECKING,
 )
 
 from langchain.docstore.document import Document
@@ -18,13 +19,10 @@ from langchain.embeddings.base import Embeddings
 from langchain.utils import xor_args
 from langchain.vectorstores.base import VectorStore
 
-try:
+if TYPE_CHECKING:
     import bagel
     import bagel.config
     from bagel.api.types import ID, OneOrMany, Where, WhereDocument
-except ImportError:
-    raise ValueError("Please install bagel `pip install betabageldb`.")
-
 
 DEFAULT_K = 5
 
@@ -68,6 +66,11 @@ class Bagel(VectorStore):
         relevance_score_fn: Optional[Callable[[float], float]] = None,
     ) -> None:
         """Initialize with bagel client"""
+        try:
+            import bagel
+            import bagel.config
+        except ImportError:
+            raise ValueError("Please install bagel `pip install betabageldb`.")
         if client is not None:
             self._client_settings = client_settings
             self._client = client
@@ -103,6 +106,10 @@ class Bagel(VectorStore):
         **kwargs: Any,
     ) -> List[Document]:
         """Query the BagelDB cluster based on the provided parameters."""
+        try:
+            import bagel  # noqa: F401
+        except ImportError:
+            raise ValueError("Please install bagel `pip install betabageldb`.")
         return self._cluster.find(
             query_texts=query_texts,
             query_embeddings=query_embeddings,
