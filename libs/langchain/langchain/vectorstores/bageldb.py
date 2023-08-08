@@ -89,10 +89,7 @@ class Bagel(VectorStore):
             metadata=cluster_metadata,
         )
         self.override_relevance_score_fn = relevance_score_fn
-        if embedding_function:
-            self._embedding_function = embedding_function
-        else:
-            self._embedding_function = None
+        self._embedding_function = embedding_function
 
     @property
     def embeddings(self) -> Optional[Embeddings]:
