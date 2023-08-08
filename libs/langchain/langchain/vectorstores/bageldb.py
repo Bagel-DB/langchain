@@ -23,9 +23,7 @@ try:
     import bagel.config
     from bagel.api.types import ID, OneOrMany, WhereDocument, Where
 except ImportError:
-    raise ValueError(
-        "Please install bagel `pip install betabageldb`."
-        )
+    raise ValueError("Please install bagel `pip install betabageldb`.")
 
 
 DEFAULT_K = 5
@@ -36,8 +34,8 @@ def _results_to_docs(results: Any) -> List[Document]:
 
 
 def _results_to_docs_and_scores(results: Any) -> List[Tuple[Document, float]]:
-    return [(
-        Document(page_content=result[0], metadata=result[1] or {}), result[2])
+    return [
+        (Document(page_content=result[0], metadata=result[1] or {}), result[2])
         for result in zip(
             results["documents"][0],
             results["metadatas"][0],
@@ -78,9 +76,9 @@ class Bagel(VectorStore):
                 _client_settings = client_settings
             else:
                 _client_settings = bagel.config.Settings(
-                        bagel_api_impl="rest",
-                        bagel_server_host="api.bageldb.ai",
-                    )
+                    bagel_api_impl="rest",
+                    bagel_server_host="api.bageldb.ai",
+                )
             self._client_settings = _client_settings
             self._client = bagel.Client(_client_settings)
 
@@ -205,9 +203,7 @@ class Bagel(VectorStore):
             List[Document]: List of documents objects representing
             the documents most similar to the query text.
         """
-        docs_and_scores = self.similarity_search_with_score(
-            query, k, where=where
-        )
+        docs_and_scores = self.similarity_search_with_score(query, k, where=where)
         return [doc for doc, _ in docs_and_scores]
 
     def similarity_search_with_score(
@@ -232,9 +228,7 @@ class Bagel(VectorStore):
             corresponding similarity score.
 
         """
-        results = self.__query_cluster(
-            query_texts=[query], n_results=k, where=where
-        )
+        results = self.__query_cluster(query_texts=[query], n_results=k, where=where)
         return _results_to_docs_and_scores(results)
 
     @classmethod
@@ -276,8 +270,7 @@ class Bagel(VectorStore):
             **kwargs,
         )
         _ = bagel_cluster.add_texts(
-            texts=texts, embeddings=text_embeddings,
-            metadatas=metadatas, ids=ids
+            texts=texts, embeddings=text_embeddings, metadatas=metadatas, ids=ids
         )
         return bagel_cluster
 

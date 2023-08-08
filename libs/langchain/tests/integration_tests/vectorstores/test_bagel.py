@@ -22,9 +22,7 @@ def test_similarity_search() -> None:
 def test_bagel() -> None:
     """Test from_texts"""
     texts = ["hello bagel", "hello langchain"]
-    txt_search = Bagel.from_texts(
-        cluster_name="testing", texts=texts
-    )
+    txt_search = Bagel.from_texts(cluster_name="testing", texts=texts)
     output = txt_search.similarity_search("hello bagel", k=1)
     assert output == [Document(page_content="hello bagel")]
     txt_search.delete_cluster()
@@ -41,7 +39,7 @@ def test_with_metadatas() -> None:
     )
     output = txt_search.similarity_search("hello bagel", k=1)
     assert output == [Document(page_content="hello bagel", metadata={"metadata": "0"})]
-    txt_search.delete_cluster()    
+    txt_search.delete_cluster()
 
 
 def test_with_metadatas_with_scores() -> None:
@@ -49,12 +47,12 @@ def test_with_metadatas_with_scores() -> None:
     texts = ["hello bagel", "hello langchain"]
     metadatas = [{"page": str(i)} for i in range(len(texts))]
     txt_search = Bagel.from_texts(
-        cluster_name="testing",
-        texts=texts,
-        metadatas=metadatas
+        cluster_name="testing", texts=texts, metadatas=metadatas
     )
     output = txt_search.similarity_search_with_score("hello bagel", k=1)
-    assert output == [(Document(page_content="hello bagel", metadata={"page": "0"}), 0.0)]
+    assert output == [
+        (Document(page_content="hello bagel", metadata={"page": "0"}), 0.0)
+    ]
     txt_search.delete_cluster()
 
 
@@ -62,8 +60,7 @@ def test_with_metadatas_with_scores_using_vector() -> None:
     """Test end to end construction and scored search, using embedding vector."""
     texts = ["hello bagel", "hello langchain"]
     metadatas = [{"page": str(i)} for i in range(len(texts))]
-    embeddings = [[1.1, 2.3, 3.2],
-                  [0.3, 0.3, 0.1]]
+    embeddings = [[1.1, 2.3, 3.2], [0.3, 0.3, 0.1]]
 
     vector_search = Bagel.from_texts(
         cluster_name="testing_vector",
@@ -71,12 +68,14 @@ def test_with_metadatas_with_scores_using_vector() -> None:
         metadatas=metadatas,
         text_embeddings=embeddings,
     )
-    
+
     embedded_query = [1.1, 2.3, 3.2]
     output = vector_search.similarity_search_by_vector_with_relevance_scores(
         query_embeddings=embedded_query, k=1
     )
-    assert output == [(Document(page_content="hello bagel", metadata={"page": "0"}), 0.0)]
+    assert output == [
+        (Document(page_content="hello bagel", metadata={"page": "0"}), 0.0)
+    ]
     vector_search.delete_cluster()
 
 
@@ -96,7 +95,9 @@ def test_with_metadatas_with_scores_using_vector_embe() -> None:
     output = vector_search.similarity_search_by_vector_with_relevance_scores(
         query_embeddings=embedded_query, k=1
     )
-    assert output == [(Document(page_content="hello bagel", metadata={"page": "0"}), 0.0)]
+    assert output == [
+        (Document(page_content="hello bagel", metadata={"page": "0"}), 0.0)
+    ]
     vector_search.delete_cluster()
 
 
@@ -109,18 +110,13 @@ def test_search_filter() -> None:
         texts=texts,
         metadatas=metadatas,
     )
-    output = txt_search.similarity_search(
-        "bagel", k=1, where={"first_letter": "h"}
-    )
+    output = txt_search.similarity_search("bagel", k=1, where={"first_letter": "h"})
     assert output == [
         Document(page_content="hello bagel", metadata={"first_letter": "h"})
     ]
-    output = txt_search.similarity_search(
-        "langchain", k=1, where={"first_letter": "h"}
-    )
+    output = txt_search.similarity_search("langchain", k=1, where={"first_letter": "h"})
     assert output == [
-        Document(page_content="hello langchain",
-                 metadata={"first_letter": "h"})
+        Document(page_content="hello langchain", metadata={"first_letter": "h"})
     ]
     txt_search.delete_cluster()
 
@@ -137,8 +133,7 @@ def test_search_filter_with_scores() -> None:
         "hello bagel", k=1, where={"source": "notion"}
     )
     assert output == [
-        (Document(page_content="hello bagel",
-                  metadata={"source": "notion"}), 0.0)
+        (Document(page_content="hello bagel", metadata={"source": "notion"}), 0.0)
     ]
     txt_search.delete_cluster()
 
@@ -146,9 +141,7 @@ def test_search_filter_with_scores() -> None:
 def test_with_include_parameter() -> None:
     """Test end to end construction and include parameter."""
     texts = ["hello bagel", "this is langchain"]
-    docsearch = Bagel.from_texts(
-        cluster_name="testing", texts=texts
-    )
+    docsearch = Bagel.from_texts(cluster_name="testing", texts=texts)
     output = docsearch.get(include=["embeddings"])
     assert output["embeddings"] is not None
     output = docsearch.get()
