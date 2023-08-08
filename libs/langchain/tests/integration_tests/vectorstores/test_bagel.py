@@ -1,6 +1,7 @@
-from langchain.vectorstores import Bagel
 from bagel.config import Settings
+
 from langchain.docstore.document import Document
+from langchain.vectorstores import Bagel
 from tests.integration_tests.vectorstores.fake_embeddings import (
     FakeEmbeddings,
 )

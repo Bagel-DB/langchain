@@ -3,25 +3,25 @@ from __future__ import annotations
 
 import uuid
 from typing import (
-    Optional,
-    List,
     Any,
-    Dict,
     Callable,
+    Dict,
     Iterable,
-    Type,
+    List,
+    Optional,
     Tuple,
+    Type,
 )
 
 from langchain.docstore.document import Document
-from langchain.vectorstores.base import VectorStore
 from langchain.embeddings.base import Embeddings
 from langchain.utils import xor_args
+from langchain.vectorstores.base import VectorStore
 
 try:
     import bagel
     import bagel.config
-    from bagel.api.types import ID, OneOrMany, WhereDocument, Where
+    from bagel.api.types import ID, OneOrMany, Where, WhereDocument
 except ImportError:
     raise ValueError("Please install bagel `pip install betabageldb`.")
 
