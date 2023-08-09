@@ -204,6 +204,7 @@ momento = "^1.5.0"
 # Please do not add any dependencies in the test_integration group
 # See instructions above ^^
 pygithub = "^1.59.0"
+betabageldb = "^0.2.32"
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.0.249"
