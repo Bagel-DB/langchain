@@ -3,30 +3,26 @@ from __future__ import annotations
 
 import uuid
 from typing import (
-    Optional,
-    List,
+    TYPE_CHECKING,
     Any,
-    Dict,
     Callable,
+    Dict,
     Iterable,
-    Type,
+    List,
+    Optional,
     Tuple,
+    Type,
 )
 
-from langchain.docstore.document import Document
-from langchain.vectorstores.base import VectorStore
-from langchain.embeddings.base import Embeddings
-from langchain.utils import xor_args
-
-try:
+if TYPE_CHECKING:
     import bagel
     import bagel.config
-    from bagel.api.types import ID, OneOrMany, WhereDocument, Where
-except ImportError:
-    raise ValueError(
-        "Please install bagel `pip install betabageldb`."
-        )
+    from bagel.api.types import ID, OneOrMany, Where, WhereDocument
 
+from langchain.docstore.document import Document
+from langchain.embeddings.base import Embeddings
+from langchain.utils import xor_args
+from langchain.vectorstores.base import VectorStore
 
 DEFAULT_K = 5
 
@@ -36,8 +32,8 @@ def _results_to_docs(results: Any) -> List[Document]:
 
 
 def _results_to_docs_and_scores(results: Any) -> List[Tuple[Document, float]]:
-    return [(
-        Document(page_content=result[0], metadata=result[1] or {}), result[2])
+    return [
+        (Document(page_content=result[0], metadata=result[1] or {}), result[2])
         for result in zip(
             results["documents"][0],
             results["metadatas"][0],
@@ -64,11 +60,17 @@ class Bagel(VectorStore):
         self,
         cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
+        embedding_function: Optional[Embeddings] = None,
         cluster_metadata: Optional[Dict] = None,
         client: Optional[bagel.Client] = None,
         relevance_score_fn: Optional[Callable[[float], float]] = None,
     ) -> None:
         """Initialize with bagel client"""
+        try:
+            import bagel
+            import bagel.config
+        except ImportError:
+            raise ValueError("Please install bagel `pip install betabageldb`.")
         if client is not None:
             self._client_settings = client_settings
             self._client = client
@@ -77,9 +79,9 @@ class Bagel(VectorStore):
                 _client_settings = client_settings
             else:
                 _client_settings = bagel.config.Settings(
-                        bagel_api_impl="rest",
-                        bagel_server_host="api.bageldb.ai",
-                    )
+                    bagel_api_impl="rest",
+                    bagel_server_host="api.bageldb.ai",
+                )
             self._client_settings = _client_settings
             self._client = bagel.Client(_client_settings)
 
@@ -88,10 +90,11 @@ class Bagel(VectorStore):
             metadata=cluster_metadata,
         )
         self.override_relevance_score_fn = relevance_score_fn
+        self._embedding_function = embedding_function
 
     @property
     def embeddings(self) -> Optional[Embeddings]:
-        return None
+        return self._embedding_function
 
     @xor_args(("query_texts", "query_embeddings"))
     def __query_cluster(
@@ -103,6 +106,10 @@ class Bagel(VectorStore):
         **kwargs: Any,
     ) -> List[Document]:
         """Query the BagelDB cluster based on the provided parameters."""
+        try:
+            import bagel  # noqa: F401
+        except ImportError:
+            raise ValueError("Please install bagel `pip install betabageldb`.")
         return self._cluster.find(
             query_texts=query_texts,
             query_embeddings=query_embeddings,
@@ -114,9 +121,9 @@ class Bagel(VectorStore):
     def add_texts(
         self,
         texts: Iterable[str],
-        embeddings: Optional[List[float]] = None,
         metadatas: Optional[List[dict]] = None,
         ids: Optional[List[str]] = None,
+        embeddings: Optional[List[List[float]]] = None,
         **kwargs: Any,
     ) -> List[str]:
         """
@@ -137,7 +144,8 @@ class Bagel(VectorStore):
             ids = [str(uuid.uuid1()) for _ in texts]
 
         texts = list(texts)
-
+        if self._embedding_function and embeddings is None and texts:
+            embeddings = self._embedding_function.embed_documents(texts)
         if metadatas:
             length_diff = len(texts) - len(metadatas)
             if length_diff:
@@ -157,8 +165,8 @@ class Bagel(VectorStore):
                 )
                 ids_with_metadata = [ids[idx] for idx in non_empty_ids]
                 self._cluster.upsert(
-                    metadatas=metadatas,
                     embeddings=embeddings_with_metadatas,
+                    metadatas=metadatas,
                     documents=texts_with_metadatas,
                     ids=ids_with_metadata,
                 )
@@ -202,9 +210,7 @@ class Bagel(VectorStore):
             List[Document]: List of documents objects representing
             the documents most similar to the query text.
         """
-        docs_and_scores = self.similarity_search_with_score(
-            query, k, where=where
-        )
+        docs_and_scores = self.similarity_search_with_score(query, k, where=where)
         return [doc for doc, _ in docs_and_scores]
 
     def similarity_search_with_score(
@@ -229,22 +235,21 @@ class Bagel(VectorStore):
             corresponding similarity score.
 
         """
-        results = self.__query_cluster(
-            query_texts=[query], n_results=k, where=where
-        )
+        results = self.__query_cluster(query_texts=[query], n_results=k, where=where)
         return _results_to_docs_and_scores(results)
 
     @classmethod
     def from_texts(
         cls: Type[Bagel],
         texts: List[str],
+        embedding: Optional[Embeddings] = None,
+        metadatas: Optional[List[dict]] = None,
+        ids: Optional[List[str]] = None,
         cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
         cluster_metadata: Optional[Dict] = None,
-        embeddings: Optional[Embeddings] = None,
-        metadatas: Optional[List[dict]] = None,
-        ids: Optional[List[str]] = None,
         client: Optional[bagel.Client] = None,
+        text_embeddings: Optional[List[List[float]]] = None,
         **kwargs: Any,
     ) -> Bagel:
         """
@@ -265,14 +270,14 @@ class Bagel(VectorStore):
         """
         bagel_cluster = cls(
             cluster_name=cluster_name,
+            embedding_function=embedding,
             client_settings=client_settings,
             client=client,
             cluster_metadata=cluster_metadata,
             **kwargs,
         )
-        bagel_cluster.add_texts(
-            texts=texts, embeddings=embeddings,
-            metadatas=metadatas, ids=ids
+        _ = bagel_cluster.add_texts(
+            texts=texts, embeddings=text_embeddings, metadatas=metadatas, ids=ids
         )
         return bagel_cluster
 
@@ -282,7 +287,7 @@ class Bagel(VectorStore):
 
     def similarity_search_by_vector_with_relevance_scores(
         self,
-        embedding: List[float],
+        query_embeddings: List[float],
         k: int = DEFAULT_K,
         where: Optional[Dict[str, str]] = None,
         **kwargs: Any,
@@ -291,7 +296,7 @@ class Bagel(VectorStore):
         Return docs most similar to embedding vector and similarity score.
         """
         results = self.__query_cluster(
-            query_embeddings=embedding, n_results=k, where=where
+            query_embeddings=query_embeddings, n_results=k, where=where
         )
         return _results_to_docs_and_scores(results)
 
@@ -340,7 +345,7 @@ class Bagel(VectorStore):
     def from_documents(
         cls: Type[Bagel],
         documents: List[Document],
-        embedding: Optional[List[float]] = None,
+        embedding: Optional[Embeddings] = None,
         ids: Optional[List[str]] = None,
         cluster_name: str = _LANGCHAIN_DEFAULT_CLUSTER_NAME,
         client_settings: Optional[bagel.config.Settings] = None,
@@ -369,7 +374,7 @@ class Bagel(VectorStore):
         metadatas = [doc.metadata for doc in documents]
         return cls.from_texts(
             texts=texts,
-            embeddings=embedding,
+            embedding=embedding,
             metadatas=metadatas,
             ids=ids,
             cluster_name=cluster_name,
