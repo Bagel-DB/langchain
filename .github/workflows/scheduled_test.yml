@@ -1,7 +1,7 @@
 name: Scheduled tests
 
 on:
-  schedule:
+  scheduled:
     - cron:  '0 13 * * *'
 
 env:

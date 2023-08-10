@@ -9,7 +9,6 @@ try:
 except ImportError:
 
     def v_args(*args: Any, **kwargs: Any) -> Any:  # type: ignore
-        """Dummy decorator for when lark is not installed."""
         return lambda _: None
 
     Transformer = object  # type: ignore

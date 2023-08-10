@@ -219,15 +219,9 @@ class BaseLLM(BaseLanguageModel[str], ABC):
         stop: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> str:
-        config = config or {}
         return (
             self.generate_prompt(
-                [self._convert_input(input)],
-                stop=stop,
-                callbacks=config.get("callbacks"),
-                tags=config.get("tags"),
-                metadata=config.get("metadata"),
-                **kwargs,
+                [self._convert_input(input)], stop=stop, **(config or {}), **kwargs
             )
             .generations[0][0]
             .text
@@ -247,14 +241,8 @@ class BaseLLM(BaseLanguageModel[str], ABC):
                 None, partial(self.invoke, input, config, stop=stop, **kwargs)
             )
 
-        config = config or {}
         llm_result = await self.agenerate_prompt(
-            [self._convert_input(input)],
-            stop=stop,
-            callbacks=config.get("callbacks"),
-            tags=config.get("tags"),
-            metadata=config.get("metadata"),
-            **kwargs,
+            [self._convert_input(input)], stop=stop, **(config or {}), **kwargs
         )
         return llm_result.generations[0][0].text
 

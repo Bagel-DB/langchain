@@ -3,8 +3,6 @@ import functools
 import logging
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
-from pydantic import Field
-
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForChainRun,
     CallbackManagerForChainRun,
@@ -29,11 +27,9 @@ class TransformChain(Chain):
     """The keys expected by the transform's input dictionary."""
     output_variables: List[str]
     """The keys returned by the transform's output dictionary."""
-    transform_cb: Callable[[Dict[str, str]], Dict[str, str]] = Field(alias="transform")
+    transform: Callable[[Dict[str, str]], Dict[str, str]]
     """The transform function."""
-    atransform_cb: Optional[
-        Callable[[Dict[str, Any]], Awaitable[Dict[str, Any]]]
-    ] = Field(None, alias="atransform")
+    atransform: Optional[Callable[[Dict[str, Any]], Awaitable[Dict[str, Any]]]] = None
     """The async coroutine transform function."""
 
     @staticmethod
@@ -66,18 +62,18 @@ class TransformChain(Chain):
         inputs: Dict[str, str],
         run_manager: Optional[CallbackManagerForChainRun] = None,
     ) -> Dict[str, str]:
-        return self.transform_cb(inputs)
+        return self.transform(inputs)
 
     async def _acall(
         self,
         inputs: Dict[str, Any],
         run_manager: Optional[AsyncCallbackManagerForChainRun] = None,
     ) -> Dict[str, Any]:
-        if self.atransform_cb is not None:
-            return await self.atransform_cb(inputs)
+        if self.atransform is not None:
+            return await self.atransform(inputs)
         else:
             self._log_once(
                 "TransformChain's atransform is not provided, falling"
                 " back to synchronous transform"
             )
-            return self.transform_cb(inputs)
+            return self.transform(inputs)

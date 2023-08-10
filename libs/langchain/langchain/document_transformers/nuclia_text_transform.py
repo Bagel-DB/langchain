@@ -11,7 +11,7 @@ class NucliaTextTransformer(BaseDocumentTransformer):
     """
     The Nuclia Understanding API splits into paragraphs and sentences,
     identifies entities, provides a summary of the text and generates
-    embeddings for all sentences.
+    embeddings for all the sentences.
     """
 
     def __init__(self, nua: NucliaUnderstandingAPI):

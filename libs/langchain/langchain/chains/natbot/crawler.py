@@ -49,8 +49,6 @@ class ElementInViewPort(TypedDict):
 
 
 class Crawler:
-    """A crawler for web pages."""
-
     def __init__(self) -> None:
         try:
             from playwright.sync_api import sync_playwright

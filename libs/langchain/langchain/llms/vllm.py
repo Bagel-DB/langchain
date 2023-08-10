@@ -8,8 +8,6 @@ from langchain.schema.output import Generation, LLMResult
 
 
 class VLLM(BaseLLM):
-    """VLLM language model."""
-
     model: str = ""
     """The name or path of a HuggingFace Transformers model."""
 
@@ -56,9 +54,6 @@ class VLLM(BaseLLM):
     max_new_tokens: int = 512
     """Maximum number of tokens to generate per output sequence."""
 
-    logprobs: Optional[int] = None
-    """Number of log probabilities to return per output token."""
-
     client: Any  #: :meta private:
 
     @root_validator()
@@ -96,7 +91,6 @@ class VLLM(BaseLLM):
             "stop": self.stop,
             "ignore_eos": self.ignore_eos,
             "use_beam_search": self.use_beam_search,
-            "logprobs": self.logprobs,
         }
 
     def _generate(

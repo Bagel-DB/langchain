@@ -203,13 +203,7 @@ class BaseTool(BaseModel, Runnable[Union[str, Dict], Any], metaclass=ToolMetacla
         **kwargs: Any,
     ) -> Any:
         config = config or {}
-        return self.run(
-            input,
-            callbacks=config.get("callbacks"),
-            tags=config.get("tags"),
-            metadata=config.get("metadata"),
-            **kwargs,
-        )
+        return self.run(input, **config, **kwargs)
 
     async def ainvoke(
         self,
@@ -222,13 +216,7 @@ class BaseTool(BaseModel, Runnable[Union[str, Dict], Any], metaclass=ToolMetacla
             return super().ainvoke(input, config, **kwargs)
 
         config = config or {}
-        return await self.arun(
-            input,
-            callbacks=config.get("callbacks"),
-            tags=config.get("tags"),
-            metadata=config.get("metadata"),
-            **kwargs,
-        )
+        return await self.arun(input, **config, **kwargs)
 
     # --- Tool ---
 
