@@ -167,3 +167,4 @@ def test_bagel_update_document() -> None:
     docsearch.update_document(document_id=document_id, document=updated_doc)
     output = docsearch.similarity_search(updated_content, k=1)
     assert output == [Document(page_content=updated_content, metadata={"page": "0"})]
+
