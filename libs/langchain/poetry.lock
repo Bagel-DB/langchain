@@ -13642,6 +13642,7 @@ javascript = ["esprima"]
 llms = ["anthropic", "clarifai", "cohere", "huggingface_hub", "manifest-ml", "nlpcloud", "openai", "openllm", "openlm", "torch", "transformers", "xinference"]
 openai = ["openai", "tiktoken"]
 qdrant = ["qdrant-client"]
+scheduled-testing = ["openai"]
 text-helpers = ["chardet"]
 
 [metadata]
