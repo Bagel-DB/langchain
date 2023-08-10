@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "langchain"
-version = "0.0.259"
+version = "0.0.260"
 description = "Building applications with LLMs through composability"
 authors = []
 license = "MIT"
@@ -377,6 +377,11 @@ extended_testing = [
  "xata",
  "xmltodict",
  "betabageldb",
+ "anthropic",
+]
+
+scheduled_testing = [
+ "openai",
 ]
 
 [tool.ruff]
